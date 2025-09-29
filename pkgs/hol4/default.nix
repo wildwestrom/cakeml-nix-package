@@ -85,9 +85,7 @@ stdenv.mkDerivation {
     bin/build ${kernelFlag}
 
     mkdir -p "$out/bin"
-    ln -s "$out/src/${holsubdir}/bin/hol" "$out/bin/hol"
-    ln -s "$out/src/${holsubdir}/bin/hol.bare" "$out/bin/hol.bare"
-    ln -s "$out/src/${holsubdir}/bin/Holmake" "$out/bin/Holmake"
+    ln -st $out/bin $out/src/${holsubdir}/bin/*
     # ln -s $out/src/hol4.${version}/bin $out/bin
   '';
 
