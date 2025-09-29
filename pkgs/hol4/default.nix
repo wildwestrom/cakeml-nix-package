@@ -15,6 +15,7 @@ let
 
   longVersion = "trindemossen-${vnum}";
   version = longVersion;
+  holsubdir = "hol-${longVersion}";
   kernelFlag = if experimentalKernel then "--expk" else "--stdknl";
 
   polymlEnableShared =
@@ -50,10 +51,10 @@ stdenv.mkDerivation {
 
     export FONTCONFIG_FILE=$(pwd)/chroot-fontconfig/fonts.conf
 
-    mkdir -p build
-    cp -r "$src" build/HOL
-    chmod -R u+w build/HOL || true
-    cd build/HOL
+    mkdir -p "$out/src"
+    cp -r "$src" "$out/src/${holsubdir}"
+    chmod -R u+w "$out/src/${holsubdir}" || true
+    cd "$out/src/${holsubdir}"
 
     substituteInPlace tools/Holmake/Holmake_types.sml \
       --replace "\"/bin/" "\"" \
@@ -69,11 +70,24 @@ stdenv.mkDerivation {
     export HOLDIR="$PWD/"
     poly < tools/smart-configure.sml
 
+    # Provide wrappers expected by build system one level up from HOLDIR
+    WRAPDIR="$(dirname "$PWD")"
+    for WRAP in HOLlinkToSigobj ${holsubdir}linkToSigobj; do
+      cat > "$WRAPDIR/$WRAP" <<'EOF'
+    #!/bin/sh
+    set -e
+    DIR="$(dirname "$0")/${holsubdir}"
+    exec "$DIR/bin/linkToSigobj" "$@"
+    EOF
+      chmod +x "$WRAPDIR/$WRAP"
+    done
+
     bin/build ${kernelFlag}
 
-    mkdir -p "$out/src" "$out/bin"
-    cp -r "$PWD" "$out/src/HOL"
-    ln -st $out/bin  $out/src/HOL/bin/*
+    mkdir -p "$out/bin"
+    ln -s "$out/src/${holsubdir}/bin/hol" "$out/bin/hol"
+    ln -s "$out/src/${holsubdir}/bin/hol.bare" "$out/bin/hol.bare"
+    ln -s "$out/src/${holsubdir}/bin/Holmake" "$out/bin/Holmake"
     # ln -s $out/src/hol4.${version}/bin $out/bin
   '';
 
