@@ -1,0 +1,25 @@
+## Formatting Rules: Preserve Indentation in Multi-line Strings and Heredocs
+
+### Scope
+- Applies to Nix files in this repo, especially `buildPhase`/`installPhase` strings in files like `pkgs/**/default.nix`.
+- Applies to shell heredocs and any multi-line strings that embed shell or Makefile content.
+
+### Rules
+- Preserve existing indentation characters and width across the entire file. Do not convert tabs to spaces or spaces to tabs.
+- Do not add, remove, or normalize leading whitespace inside multi-line strings used for shell code (e.g., Nix `'' ... ''`). Treat the contents as opaque.
+- Do not reindent, align, or wrap lines within heredocs or their bodies. Keep the delimiter lines (e.g., `<<EOF` and `EOF`) and every line in between exactly as authored.
+- Do not trim, insert, or shift leading spaces inside heredoc bodies. Avoid any transformations inside these blocks.
+- Outside of multi-line strings, regular Nix formatting may proceed, but must never change indentation within the embedded string payloads.
+
+### Examples (Behavioral)
+- OK: Reflow or align Nix attribute sets.
+- NOT OK: Reindent lines within `buildPhase = '' ... ''` that contain shell code or heredocs.
+- NOT OK: Add leading spaces before heredoc content or move the `EOF` marker.
+
+### Rationale
+The embedded shell scripts and heredocs are sensitive to whitespace. Reindenting or wrapping them can change behavior or break builds. Preserve them verbatim.
+
+---
+alwaysApply: true
+---
+
