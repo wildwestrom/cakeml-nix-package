@@ -17,9 +17,9 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
-        packages = {
+        packages = rec {
           hol4 = pkgs.callPackage ./pkgs/hol4 { };
-          cakeml = pkgs.callPackage ./pkgs/cakeml { hol4 = self.packages.${system}.hol4; };
+          cakeml = pkgs.callPackage ./pkgs/cakeml { hol4 = hol4; };
           default = self.packages.${system}.cakeml;
         };
 
