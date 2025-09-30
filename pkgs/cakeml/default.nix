@@ -2,15 +2,13 @@
   stdenv,
   lib,
   fetchFromGitHub,
-  makeWrapper,
-  gnumake,
-  gcc,
-  coreutils,
   hol4,
-  polyml,
+  gnumake,
+  bash,
+  fetchurl,
 }:
 
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   pname = "cakeml";
   version = "vHOL-Trindemossen-2";
 
@@ -22,37 +20,36 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [
-    gnumake
-    gcc
-    makeWrapper
-    polyml
     hol4
+    gnumake
+    bash
   ];
-  buildInputs = [ coreutils ];
+  buildInputs = [ ];
 
+  # Prebuilt tarball fallback (verified bootstrapped compiler and FFI sources)
+  prebuilt = fetchurl {
+    url = "https://github.com/CakeML/cakeml/releases/download/${version}/cake-x64-64.tar.gz";
+    # nix-prefetch-url result
+    sha256 = "1yp25pbrk2z22z2ljywc6jdww2qhcil92i1aa32yv5nvx5kknvhz";
+  };
+
+  # For now, stage 1: install from prebuilt release to get working `cake`.
+  # We will iterate to full-from-source bootstrap once HOL4 Holmake interaction is unblocked.
   buildPhase = ''
     runHook preBuild
-    export HOME="$TMPDIR"
-    export PATH=${hol4}/bin:$PATH
-    chmod -R u+w .
-    # Prepare a writable HOL4 source tree for Holmake
-    cp -r ${hol4}/src/hol-* ./hol4-src
-    chmod -R u+w ./hol4-src
-    export HOLDIR="$PWD/hol4-src"
-    # Ensure a writable Holmake work dir in CakeML tree
-    rm -rf .hol || true
-    mkdir -p .hol/make-deps
-    # Build CakeML using HOL4; this can take a long time
-    ${hol4}/bin/Holmake
-    cd compiler/bootstrap/compilation/x64
-    make -j${stdenv.hostPlatform.parallellism or "1"} cake
+    mkdir prebuilt && cd prebuilt
+    tar -xzf ${prebuilt}
+    cd cake-x64-64
+    make
+    cd ../..
     runHook postBuild
   '';
 
   installPhase = ''
     runHook preInstall
     mkdir -p "$out/bin"
-    install -Dm755 compiler/bootstrap/compilation/x64/cake "$out/bin/cake"
+    (cd prebuilt/cake-x64-64 && make)
+    install -Dm755 prebuilt/cake-x64-64/cake "$out/bin/cake"
     runHook postInstall
   '';
 
