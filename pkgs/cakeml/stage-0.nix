@@ -1,7 +1,7 @@
 {
   stdenv,
   fetchFromGitHub,
-  hol,
+  hol4,
   arch,
   bits,
 }:
@@ -16,7 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-61J00m88zcIEN43Jy2A4CcuvrNraSG8+2RKPccp2Awc=";
   };
 
-  nativeBuildInputs = [ (hol.override { experimentalKernel = false; }) ];
+  nativeBuildInputs = [ (hol4.override { experimentalKernel = false; }) ];
 
   buildPhase = ''
     runHook preBuild

@@ -73,8 +73,36 @@ stdenv.mkDerivation {
 
     jobs=''${enableParallelBuilding:+$NIX_BUILD_CORES}
 
-    # Extra theories we want to build
-    echo 'examples/formal-languages/context-free' >> tools/sequences/final-examples
+    # Extra theories we want to build.
+    # CakeML's x64 bootstrap (compiler/bootstrap/compilation/x64/64) pulls these
+    # HOL examples into its Holmake INCLUDES closure. They must be prebuilt here
+    # because the bootstrap runs against a read-only HOLDIR in the Nix store and
+    # Holmake cannot compile missing example theories in place.
+    for ex in \
+      examples/algorithms \
+      examples/algorithms/unification/triangular/first-order \
+      examples/algorithms/unification/triangular/first-order/compilation \
+      examples/balanced_bst \
+      examples/bootstrap \
+      examples/formal-languages/context-free \
+      examples/formal-languages/regular \
+      examples/fun-op-sem/lprefix_lub \
+      examples/l3-machine-code/common \
+      examples/l3-machine-code/arm/model \
+      examples/l3-machine-code/arm/step \
+      examples/l3-machine-code/arm8/model \
+      examples/l3-machine-code/arm8/step \
+      examples/l3-machine-code/mips/model \
+      examples/l3-machine-code/mips/step \
+      examples/l3-machine-code/riscv/model \
+      examples/l3-machine-code/riscv/step \
+      examples/l3-machine-code/x64/model \
+      examples/l3-machine-code/x64/step \
+      examples/machine-code/hoare-triple \
+      examples/machine-code/multiword \
+      ; do
+      echo "$ex" >> tools/sequences/final-examples
+    done
 
     # We run `bin/build` twice to force HOL to generate `.hol/make-deps/*Theory.{sml,sig}.d` files
     # See https://github.com/HOL-Theorem-Prover/HOL/issues/1670 for more info

@@ -2,7 +2,7 @@
   lib,
   callPackage,
   stdenv,
-  hol,
+  cakeml,
   arch,
   bits,
 }:
@@ -11,11 +11,6 @@ let
     # x64-64 is the only variant which includes cake-sexpr-*.
     arch = "x64";
     bits = "64";
-    inherit hol;
-  };
-  cakeml = callPackage ./default.nix {
-    asm = stage-0;
-    inherit hol;
   };
 in
 stdenv.mkDerivation (finalAttrs: {

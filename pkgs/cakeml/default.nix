@@ -16,13 +16,12 @@ let
 in
 {
   lib,
+  pkgsx86_64Linux,
   callPackage,
   stdenv,
-  hol,
-  asm ? callPackage ./stage-1.nix {
+  asm ? pkgsx86_64Linux.callPackage ./stage-1.nix {
     arch = cakemlArch stdenv.hostPlatform;
     bits = if stdenv.targetPlatform.is64bit then "64" else "32";
-    inherit hol;
   },
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -55,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
           (bits: {
             name = "${arch}-${bits}";
             # TODO: for 32-bit targets, we need an x64-32 compiler
-            value = callPackage ./stage-1.nix { inherit arch bits hol; };
+            value = callPackage ./stage-1.nix { inherit arch bits; };
           })
           [
             "32"
